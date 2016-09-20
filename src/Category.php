@@ -1,18 +1,13 @@
 <?php
-
-    class Category{
+    class Category
+    {
         private $name;
         private $id;
 
-        function __construct($name, $id=null)
+        function __construct($name, $id = null)
         {
             $this->name = $name;
             $this->id = $id;
-        }
-
-        function getName()
-        {
-            return $this->name;
         }
 
         function setName($new_name)
@@ -20,54 +15,65 @@
             $this->name = (string) $new_name;
         }
 
-        function getID()
+        function getName()
+        {
+            return $this->name;
+        }
+
+        function getId()
         {
             return $this->id;
         }
 
         function save()
         {
-            $GLOBALS['DB']->exec("INSERT INTO categories (name) VALUES('{$this->getName()}');");
-            $this->id = $GLOBALS['DB']->lastInsertId();
+            $GLOBALS['DB']->exec("INSERT INTO categories (name) VALUES ('{$this->getName()}');");
+            $this->id= $GLOBALS['DB']->lastInsertId();
         }
 
         static function getAll()
         {
-            $database_categories = $GLOBALS['DB']->query("SELECT * FROM categories;");
-            $database_data = $database_categories->fetchAll();
-            $categories =  array();
-
-            for ($category_index = 0; $category_index < count($database_data); $category_index++)
-            {
-                $name = $database_data[$category_index]['name'];
-                $id = $database_data[$category_index]['id'];
+            $returned_categories = $GLOBALS['DB']->query("SELECT * FROM categories;");
+            $categories = array();
+            foreach($returned_categories as $category) {
+                $name = $category['name'];
+                $id = $category['id'];
                 $new_category = new Category($name, $id);
-                $categories[] = $new_category;
+                array_push($categories, $new_category);
             }
-
             return $categories;
         }
 
         static function deleteAll()
         {
-            $GLOBALS['DB']->exec("DELETE FROM categories;");
+          $GLOBALS['DB']->exec("DELETE FROM categories;");
         }
 
         static function find($search_id)
         {
             $found_category = null;
             $categories = Category::getAll();
-            for ($category_index = 0; $category_index < count($categories); $category_index++){
-                $current_id = $categories[$category_index]->getID();
-                if ($current_id === $search_id){
-                    return $categories[$category_index];
+            foreach($categories as $category) {
+                $category_id = $category->getId();
+                if ($category_id == $search_id) {
+                  $found_category = $category;
                 }
             }
-            print("Could not find task with id: " . $search_id . "\n");
-            return null;
+            return $found_category;
         }
 
+        function getTasks()
+        {
+            $task = Array();
+            $returned_tasks = $GLOBALS['DB']->query("SELECT * FROM tasks WHERE category_id ={$this->getId()};");
+            foreach($returned_tasks as $task) {
+                $description = $task['description'];
+                $id = $task['id'];
+                $category_id = $task['category_id'];
+                $new_task = new Task($description, $id, $category_id);
+                array_push($tasks, $new_task);
+            }
+            return $tasks;
+        }
     }
-
-
- ?>
+?>

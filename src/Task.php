@@ -2,12 +2,14 @@
 
     class Task{
         private $description;
+        private $category_id;
         private $id;
 
-        function __construct($description, $id=null)
+        function __construct($description, $id=null, $category_id)
         {
             $this->description = $description;
             $this->id = $id;
+            $this->category_id = $category_id;
         }
 
         function getDescription()
@@ -20,6 +22,12 @@
             $this->description = (string) $new_description;
 
         }
+
+        function getCategoryId()
+        {
+            return $this->category_id;
+        }
+
         function getID()
         {
             return $this->id;
@@ -28,38 +36,22 @@
 
         function save()
         {
-            $GLOBALS['DB']->exec("INSERT INTO tasks (description) VALUES ('{$this->getDescription()}');");
+            $GLOBALS['DB']->exec("INSERT INTO tasks (description, category_id) VALUES ('{$this->getDescription()}', {$this->getCategoryId()});");
             //NOTE: this will sync the local id with the SQL ID
             $this->id = $GLOBALS['DB']->lastInsertId();
         }
 
         static function getAll()
         {
-            $database_tasks = $GLOBALS['DB']->query("SELECT * FROM tasks;");
-            // var_dump("database_tasks: " . $database_tasks . "\n");
-
-            $database_data = $database_tasks->fetchAll();
-            // var_dump("database_data: " . $database_data . "\n");
-
+            $returned_tasks = $GLOBALS['DB']->query("SELECT * FROM tasks;");
             $tasks = array();
-
-            // foreach ($database_tasks as $task )
-            // {
-            //     $description = $task['description'];
-            //     $new_task = new Task($description);
-            //     array_push($tasks, $new_task);
-            // }
-            for ($task_index = 0; $task_index < count($database_data); $task_index++)
-            {
-                $description = $database_data[$task_index]['description'];
-                //   var_dump($description);
-                //NOTE: this is getting the id from the database
-                $id = $database_data[$task_index]['id'];
-                $new_task = new Task($description, $id);
-                //NOTE: This is the same as array push:
-                $tasks[] = $new_task;
+            foreach($returned_tasks as $task) {
+                $description = $task['description'];
+                $id = $task['id'];
+                $category_id = $task['category_id'];
+                $new_task = new Task($description, $id, $category_id);
+                array_push($tasks, $new_task);
             }
-
             return $tasks;
         }
 
