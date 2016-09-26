@@ -2,14 +2,12 @@
 
     class Task{
         private $description;
-        private $category_id;
         private $id;
 
-        function __construct($description, $id=null, $category_id)
+        function __construct($description, $id=null)
         {
             $this->description = $description;
             $this->id = $id;
-            $this->category_id = $category_id;
         }
 
         function getDescription()
@@ -23,11 +21,6 @@
 
         }
 
-        function getCategoryId()
-        {
-            return $this->category_id;
-        }
-
         function getID()
         {
             return $this->id;
@@ -36,7 +29,7 @@
 
         function save()
         {
-            $GLOBALS['DB']->exec("INSERT INTO tasks (description, category_id) VALUES ('{$this->getDescription()}', {$this->getCategoryId()});");
+            $GLOBALS['DB']->exec("INSERT INTO tasks (description) VALUES ('{$this->getDescription()}');");
             //NOTE: this will sync the local id with the SQL ID
             $this->id = $GLOBALS['DB']->lastInsertId();
         }
